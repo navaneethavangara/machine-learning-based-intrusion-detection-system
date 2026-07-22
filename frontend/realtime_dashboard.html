@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Real-Time IDS Monitoring</title>
+
+<style>
+
+body{
+background:#0b132b;
+color:white;
+font-family:Arial;
+padding:20px;
+}
+
+h1{
+font-size:40px;
+margin-bottom:20px;
+text-align:center;
+}
+
+/* layout */
+
+.container{
+
+display:flex;
+gap:20px;
+
+}
+
+.dashboard{
+
+width:50%;
+
+}
+
+/* table */
+
+table{
+
+width:100%;
+background:#1c2541;
+border-collapse:collapse;
+
+}
+
+th,td{
+
+padding:10px;
+text-align:center;
+
+}
+
+th{
+
+background:#3a506b;
+
+}
+
+.normal{
+
+color:lightgreen;
+font-weight:bold;
+
+}
+
+.attack{
+
+color:red;
+font-weight:bold;
+
+}
+
+.cluster0{
+
+color:lightgreen;
+
+}
+
+.cluster1{
+
+color:red;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Real-Time IDS Monitoring Dashboard</h1>
+
+
+<div class="container">
+
+
+<!-- SUPERVISED -->
+
+<div class="dashboard">
+
+<h2>Supervised Learning</h2>
+
+<table border="1">
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+<th>Time</th>
+<th>Features</th>
+<th>Prediction</th>
+<th>Confidence</th>
+
+</tr>
+
+</thead>
+
+<tbody id="supervised_table"></tbody>
+
+</table>
+
+</div>
+
+
+<!-- UNSUPERVISED -->
+
+<div class="dashboard">
+
+<h2>Unsupervised Learning</h2>
+
+<table border="1">
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+<th>Time</th>
+<th>Features</th>
+<th>Cluster</th>
+
+</tr>
+
+</thead>
+
+<tbody id="unsupervised_table"></tbody>
+
+</table>
+
+</div>
+
+
+</div>
+
+
+<script>
+
+function loadData(){
+
+fetch("http://127.0.0.1:5000/api/realtime_data")
+
+.then(res=>res.json())
+
+.then(data=>{
+
+
+// supervised
+
+let sup_html=""
+
+data.supervised.forEach(row=>{
+
+let cls=row.prediction=="Attack"?"attack":"normal"
+
+sup_html+=`
+
+<tr>
+
+<td>${row.id}</td>
+<td>${row.time}</td>
+<td>${row.features}</td>
+<td class="${cls}">
+${row.prediction}
+</td>
+<td>
+${row.confidence}%
+</td>
+
+</tr>
+
+`
+
+})
+
+document.getElementById("supervised_table").innerHTML=sup_html
+
+
+
+// unsupervised
+
+let unsup_html=""
+
+data.unsupervised.forEach(row=>{
+
+let cls=row.cluster==1?"cluster1":"cluster0"
+
+unsup_html+=`
+
+<tr>
+
+<td>${row.id}</td>
+<td>${row.time}</td>
+<td>${row.features}</td>
+<td class="${cls}">
+${row.cluster}
+</td>
+
+</tr>
+
+`
+
+})
+
+document.getElementById("unsupervised_table").innerHTML=unsup_html
+
+
+})
+
+}
+
+
+// refresh every 3 seconds
+
+setInterval(loadData,3000)
+
+loadData()
+
+</script>
+
+</body>
+</html>

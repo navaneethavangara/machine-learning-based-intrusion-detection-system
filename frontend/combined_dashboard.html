@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>IDS Monitoring Dashboard</title>
+
+<style>
+
+body{
+background:#0b132b;
+color:white;
+font-family:Arial;
+padding:20px;
+}
+
+h1{
+font-size:40px;
+margin-bottom:20px;
+}
+
+/* STAT CARDS */
+
+.container{
+
+display:flex;
+gap:20px;
+margin-bottom:30px;
+
+}
+
+.card{
+
+background:#1c2541;
+padding:20px;
+border-radius:10px;
+width:200px;
+text-align:center;
+
+}
+
+.card h2{
+
+font-size:18px;
+
+}
+
+.value{
+
+font-size:30px;
+margin-top:10px;
+
+}
+
+
+/* TABLE */
+
+table{
+
+width:100%;
+background:#1c2541;
+border-collapse:collapse;
+
+}
+
+th,td{
+
+padding:12px;
+text-align:center;
+
+}
+
+th{
+
+background:#3a506b;
+
+}
+
+.attack{
+
+color:red;
+font-weight:bold;
+
+}
+
+.normal{
+
+color:lightgreen;
+font-weight:bold;
+
+}
+
+.cluster1{
+
+color:red;
+
+}
+
+.cluster0{
+
+color:lightgreen;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Real-Time IDS Monitoring Dashboard</h1>
+
+
+<!-- STAT CARDS -->
+
+<div class="container">
+
+<div class="card">
+<h2>Total Traffic</h2>
+<div id="total" class="value">0</div>
+</div>
+
+<div class="card">
+<h2>Attack Detected</h2>
+<div id="attack" class="value">0</div>
+</div>
+
+<div class="card">
+<h2>Normal Traffic</h2>
+<div id="normal" class="value">0</div>
+</div>
+
+<div class="card">
+<h2>Cluster 0</h2>
+<div id="cluster0" class="value">0</div>
+</div>
+
+<div class="card">
+<h2>Cluster 1</h2>
+<div id="cluster1" class="value">0</div>
+</div>
+
+</div>
+
+
+<!-- TABLE -->
+
+<table border="1">
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+<th>Time</th>
+<th>Features</th>
+<th>Prediction</th>
+<th>Confidence</th>
+<th>Cluster</th>
+
+</tr>
+
+</thead>
+
+<tbody id="logs"></tbody>
+
+</table>
+
+
+<script>
+
+function loadDashboard(){
+
+fetch("http://127.0.0.1:5000/api/dashboard_data")
+
+.then(res=>res.json())
+
+.then(data=>{
+
+
+// update stats
+
+document.getElementById("total").innerText=data.stats.total
+document.getElementById("attack").innerText=data.stats.attack
+document.getElementById("normal").innerText=data.stats.normal
+document.getElementById("cluster0").innerText=data.stats.cluster0
+document.getElementById("cluster1").innerText=data.stats.cluster1
+
+
+// update table
+
+let html=""
+
+data.logs.forEach(row=>{
+
+let pred_class=row.prediction=="Attack"?"attack":"normal"
+
+let cluster_class=row.cluster==1?"cluster1":"cluster0"
+
+html+=`
+
+<tr>
+
+<td>${row.id}</td>
+
+<td>${row.time}</td>
+
+<td>${row.features}</td>
+
+<td class="${pred_class}">
+${row.prediction}
+</td>
+
+<td>
+${row.confidence}%
+</td>
+
+<td class="${cluster_class}">
+${row.cluster}
+</td>
+
+</tr>
+
+`
+
+})
+
+document.getElementById("logs").innerHTML=html
+
+
+})
+
+}
+
+
+// auto refresh every 3 seconds
+
+setInterval(loadDashboard,3000)
+
+loadDashboard()
+
+</script>
+
+</body>
+</html>

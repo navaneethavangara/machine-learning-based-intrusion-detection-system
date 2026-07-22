@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Unsupervised Real-Time IDS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h2>Unsupervised Real-Time Intrusion Detection</h2>
+
+<button onclick="startSimulation()">Start</button>
+<button onclick="stopSimulation()">Stop</button>
+
+<pre id="output"></pre>
+
+<script>
+let interval;
+
+function generateTraffic() {
+    return [
+        Math.floor(Math.random() * 20),
+        Math.floor(Math.random() * 2),
+        Math.floor(Math.random() * 500),
+        Math.floor(Math.random() * 1000),
+        Math.floor(Math.random() * 2)
+    ];
+}
+
+function sendTraffic() {
+    const features = generateTraffic();
+
+    fetch("http://127.0.0.1:5000/predict_unsupervised", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({features})
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("output").innerText =
+            "Traffic: " + features + "\nResult: " +
+            JSON.stringify(data, null, 2);
+    });
+}
+
+function startSimulation() {
+    interval = setInterval(sendTraffic, 2000);
+}
+
+function stopSimulation() {
+    clearInterval(interval);
+}
+</script>
+
+</body>
+</html>

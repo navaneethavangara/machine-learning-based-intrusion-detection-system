@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-Time Intrusion Detection Simulation</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            margin: 40px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-right: 10px;
+            background-color: #2d89ef;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f4f4f4;
+            font-size: 18px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<h2>Real-Time Intrusion Detection Simulation</h2>
+
+<button onclick="startSimulation()">Start Simulation</button>
+<button onclick="stopSimulation()">Stop</button>
+
+<div id="output">Waiting...</div>
+
+<script>
+
+let interval = null;
+
+function startSimulation(){
+
+    if(interval !== null) return;
+
+    interval = setInterval(()=>{
+
+        fetch("http://127.0.0.1:5000/realtime")
+        .then(response => response.json())
+        .then(data => {
+
+            document.getElementById("output").innerHTML = `
+
+                <b>Traffic:</b><br>
+                ${JSON.stringify(data.traffic)} <br><br>
+
+                <b>Random Forest Result:</b> ${data.random_forest} <br>
+
+                <b>KMeans Result:</b> ${data.kmeans}
+
+            `;
+
+        })
+        .catch(error => {
+
+            document.getElementById("output").innerHTML =
+                "Error connecting to backend";
+
+        });
+
+    }, 2000);
+
+}
+
+
+function stopSimulation(){
+
+    clearInterval(interval);
+    interval = null;
+
+}
+
+</script>
+
+</body>
+</html>
