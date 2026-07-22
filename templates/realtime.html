@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Sentinel Live Traffic Monitor</title>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+    background:#0b123b;
+    color:white;
+    font-family:Arial;
+    padding:20px;
+}
+
+h1{
+    margin-bottom:25px;
+}
+
+.graph-container{
+    display:flex;
+    gap:30px;
+    margin-bottom:40px;
+}
+
+.graph-box{
+    flex:1;
+    background:#111a44;
+    padding:20px;
+    border-radius:15px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th, td{
+    padding:12px;
+    text-align:center;
+    border-bottom:1px solid #2c3e50;
+}
+
+th{
+    background:#2d3f5f;
+}
+
+.attack{
+    color:red;
+    font-weight:bold;
+}
+
+.normal{
+    color:#38ef7d;
+    font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1><i class="fa-solid fa-satellite-dish"></i> Sentinel Live Traffic Monitor</h1>
+
+<div class="graph-container">
+
+<div class="graph-box">
+<h3>Random Forest vs K-Means Performance</h3>
+<canvas id="modelChart"></canvas>
+</div>
+
+<div class="graph-box">
+<h3>Threat Distribution</h3>
+<canvas id="pieChart"></canvas>
+</div>
+
+</div>
+
+<h3>Prediction Logs</h3>
+
+<table>
+<thead>
+<tr>
+<th>Time</th>
+<th>IP</th>
+<th>RF Prediction</th>
+<th>RF Confidence</th>
+<th>KMeans Cluster</th>
+</tr>
+</thead>
+<tbody id="logTable"></tbody>
+</table>
+
+<script>
+
+// ===================== LINE GRAPH =====================
+
+const ctx = document.getElementById('modelChart').getContext('2d');
+
+let labels = [];
+let rfData = [];
+let kmeansData = [];
+
+const modelChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Random Forest Accuracy',
+                data: rfData,
+                borderColor: '#38ef7d',
+                tension: 0.4
+            },
+            {
+                label: 'K-Means Score',
+                data: kmeansData,
+                borderColor: '#ff416c',
+                tension: 0.4
+            }
+        ]
+    },
+    options:{
+        responsive:true,
+        plugins:{
+            legend:{ labels:{color:'white'} }
+        },
+        scales:{
+            x:{ ticks:{color:'white'} },
+            y:{ ticks:{color:'white'} }
+        }
+    }
+});
+
+// ===================== PIE CHART =====================
+
+const pieCtx = document.getElementById('pieChart').getContext('2d');
+
+let normalCount = 0;
+let attackCount = 0;
+
+const pieChart = new Chart(pieCtx, {
+    type: 'pie',
+    data:{
+        labels:['Normal','Attack'],
+        datasets:[{
+            data:[normalCount, attackCount],
+            backgroundColor:['blue','pink']
+        }]
+    },
+    options:{
+        plugins:{
+            legend:{ labels:{color:'white'} }
+        }
+    }
+});
+
+// ===================== REALTIME UPDATE =====================
+
+function updateRealtime(){
+
+    const time = new Date().toLocaleTimeString();
+
+    // Simulated Random Forest Output
+    const rfPrediction = Math.random() > 0.7 ? "Attack" : "Normal";
+    const rfConfidence = Math.floor(Math.random()*30) + 70;
+
+    // Simulated KMeans Cluster
+    const kmeansCluster = Math.floor(Math.random()*3); // 0,1,2
+
+    const randomIP = "192.168.0." + Math.floor(Math.random()*255);
+
+    // Update Line Graph
+    const rfValue = rfConfidence;
+    const kmeansValue = Math.floor(Math.random()*50)+30;
+
+    if(labels.length > 10){
+        labels.shift();
+        rfData.shift();
+        kmeansData.shift();
+    }
+
+    labels.push(time);
+    rfData.push(rfValue);
+    kmeansData.push(kmeansValue);
+
+    modelChart.update();
+
+    // Update Prediction Log Table
+    const table = document.getElementById("logTable");
+
+    const row = `
+    <tr>
+        <td>${time}</td>
+        <td>${randomIP}</td>
+        <td class="${rfPrediction=='Attack'?'attack':'normal'}">
+            ${rfPrediction}
+        </td>
+        <td>${rfConfidence}%</td>
+        <td>${kmeansCluster}</td>
+    </tr>
+    `;
+
+    table.innerHTML = row + table.innerHTML;
+
+    if(table.rows.length > 15){
+        table.deleteRow(15);
+    }
+
+    // Update Pie Chart
+    if(rfPrediction=="Attack"){
+        attackCount++;
+    }else{
+        normalCount++;
+    }
+
+    pieChart.data.datasets[0].data = [normalCount, attackCount];
+    pieChart.update();
+}
+
+setInterval(updateRealtime,2000);
+
+</script>
+
+</body>
+</html>
