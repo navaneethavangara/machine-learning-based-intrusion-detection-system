@@ -1,0 +1,5 @@
+duration,protocol_type,service,flag,src_bytes,dst_bytes,label
+0,tcp,http,SF,200,6000,normal
+0,udp,dns,SF,300,500,attack
+0,tcp,ftp,S0,0,0,attack
+0,icmp,ecr_i,SF,1000,0,normal
